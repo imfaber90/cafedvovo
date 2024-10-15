@@ -90,7 +90,7 @@ with col2:
     st.write("#")
 
     # Selectbox para tipo de pessoa
-    select = st.selectbox('', options = ['Física', 'Jurídica'], key='selec1',)
+    select = st.selectbox('', options = ['Jurídica','Física'], key='selec1',)
 
 # Lógica para "Fisica" e "Jurídica"
 if select == 'Física':
@@ -99,7 +99,7 @@ if select == 'Física':
         st.markdown(f"<h2 style= 'color:Orange;padding-top: 25px;'>TIPO: </h2>", unsafe_allow_html=True)
     with col2:
         cpf = st.text_input('', key='cpf')
-        select2 = st.selectbox('', ['Nenhum', 'Funcionário', 'Estrangeiro'], key='selec2')
+        select2 = st.selectbox('', ['Funcionário', 'Estrangeiro'], key='selec2')
 
     # Lógica para tipo de funcionário
     if select2 == 'Funcionário':
@@ -128,7 +128,7 @@ if select == 'Física':
             doc_inter = st.text_input('', key='cnpj')
             descricao_es = st.text_input('', key='desc')
             if st.button('CADASTRAR', key='cadest'):
-                campos_ok, formatted_salary, mensagem = verifica_campos(nome, email, tel, nascimento, pais, cep, estado, cidade, bairro, logradouro, numero, complemento, select=select, tipo = select2, doc_inter = doc_inter, descricao_es = descricao_es)
+                campos_ok, formatted_salary, mensagem = verifica_campos(nome, email, tel, nascimento, pais, cep, estado, cidade, bairro, logradouro, numero, complemento, tipo = select2, doc_inter = doc_inter, descricao_es = descricao_es)
                 if not campos_ok:
                     st.warning(mensagem)
                 else:
@@ -137,17 +137,37 @@ if select == 'Física':
                     
 elif select == 'Jurídica':
     with col1:
-        st.markdown(f"<h2 style= 'color:Orange;padding-top: 25px;'>CNPJ: </h2>", unsafe_allow_html=True)
-        st.markdown(f"<h2 style= 'color:Orange;padding-top: 25px;'>DESCRIÇÃO: </h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style= 'color:Orange;padding-top: 25px;'>Tipo: </h2>", unsafe_allow_html=True)
     with col2:
-        cnpj = st.text_input('', key='cnpj')
-        descricao = st.text_input('', key='desc')
-        if st.button('CADASTRAR', key='cadjur'):
-            campos_ok, formatted_salary, mensagem = verifica_campos(nome, email, tel, nascimento, pais, cep, estado, cidade, bairro, logradouro, numero, complemento, select=select, tipo=None, cnpj=cnpj, descricao=descricao)
-            if not campos_ok:
-                st.warning(mensagem)
-            else:
-                data_nascimento_formatada =  convert_to_datetime_format(nascimento)
-                crud.insert('p_juridica', nome=nome, email=email, tel=tel, nascimento=data_nascimento_formatada, data_cadastro=data_formatada, pais=pais, cep=cep, estado=estado, cidade=cidade, bairro=bairro, logradouro=logradouro, numero=numero, complemento=complemento, cnpj=cnpj, descricao=descricao)
-                   
+        select3 = st.selectbox('', ['Cliente PJ', 'Fornecedor'], key='selec2')
+    if select3 == 'Cliente PJ':    
+        with col1:
+            st.markdown(f"<h2 style= 'color:Orange;padding-top: 25px;'>CNPJ: </h2>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style= 'color:Orange;padding-top: 25px;'>DESCRIÇÃO: </h2>", unsafe_allow_html=True)
+        with col2:
+            cnpj = st.text_input('', key='cnpj')
+            descricao = st.text_input('', key='desc')
+            if st.button('CADASTRAR', key='cadjur'):
+                campos_ok, formatted_salary, mensagem = verifica_campos(nome, email, tel, nascimento, pais, cep, estado, cidade, bairro, logradouro, numero, complemento, tipo=select3, cnpj=cnpj, descricao=descricao)
+                if not campos_ok:
+                    st.warning(mensagem)
+                else:
+                    data_nascimento_formatada =  convert_to_datetime_format(nascimento)
+                    crud.insert('p_juridica', nome=nome, email=email, tel=tel, nascimento=data_nascimento_formatada, data_cadastro=data_formatada, pais=pais, cep=cep, estado=estado, cidade=cidade, bairro=bairro, logradouro=logradouro, numero=numero, complemento=complemento, cnpj=cnpj, descricao=descricao)
+    if select3 == 'Fornecedor':    
+        with col1:
+            st.markdown(f"<h2 style= 'color:Orange;padding-top: 25px;'>EMPRESA: </h2>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style= 'color:Orange;padding-top: 25px;'>CNPJ: </h2>", unsafe_allow_html=True)
+        with col2:
+            nome_empresa = st.text_input('', key='nome_emp')
+            cnpj_fornecedor = st.text_input('', key='cnpj_forn')
+            if st.button('CADASTRAR', key='cadfor'):
+                campos_ok, formatted_salary, mensagem = verifica_campos(nome, email, tel, nascimento, pais, cep, estado, cidade, bairro, logradouro, numero, complemento, tipo=select3, nome_empresa=nome_empresa, cnpj_fornecedor=cnpj_fornecedor)
+                if not campos_ok:
+                    st.warning(mensagem)
+                else:
+                    data_nascimento_formatada = convert_to_datetime_format(nascimento)
+                    crud.insert('fornecedor', nome=nome, email=email, tel=tel, nascimento=data_nascimento_formatada, data_cadastro=data_formatada, pais=pais, cep=cep, estado=estado, cidade=cidade, bairro=bairro, logradouro=logradouro, numero=numero, complemento=complemento, nome_empresa=nome_empresa, cnpj_fornecedor=cnpj_fornecedor)
+                    
+                    
 # to continue

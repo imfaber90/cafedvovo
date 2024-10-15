@@ -21,9 +21,12 @@ def verifica_campos(nome, email, telefone, nascimento, pais, cep, estado, cidade
         if kwargs['tipo'] == "Estrangeiro":
             if not kwargs.get('doc_inter') or not kwargs.get('descricao_es'):
                 return False, "Todos os campos de estrangeiro devem ser preenchidos."
-        if kwargs['select'] == 'Jurídica': 
+        if kwargs['tipo'] == 'Cliente PJ': 
             if not kwargs.get('cnpj') or not kwargs.get('descricao'):
                 return False, "Todos os campos de jurídica devem ser preenchidos."
+        if kwargs['tipo'] == "Fornecedor":
+            if not kwargs.get('nome_empresa') or not kwargs.get('cnpj_fornecedor'):
+                return False, "Todos os campos de fornecedor devem ser preenchidos."
         return True, ""
 
     # Verificações básicas

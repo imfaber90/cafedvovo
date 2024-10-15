@@ -14,6 +14,7 @@ crud = CRUD()
 clientes_pj = crud.join_all_users_information_by_type("p_juridica")
 estrangeiros = crud.join_all_users_information_by_type("estrangeiro")
 funcionarios = crud.join_all_users_information_by_type("funcionario")
+fornecedores = crud.join_all_users_information_by_type("fornecedor")
 
 # Aplica estilo global para fundo e cores de texto
 st.markdown("""
@@ -76,6 +77,8 @@ def exibir_com_acoes(df, categoria):
             if st.session_state.get(f"edit_mode_{index}", False):
                 dados_gerais_usuario = crud.read_all_user_data(row['pessoa_id'])
                 tipo_usuario = dados_gerais_usuario[13]
+                print(tipo_usuario)
+                
                 dados_especificos_tipo_usuario = crud.join_by_type_id(tipo_usuario, row['pessoa_id'])
 
                 #st.success(dados_especificos_tipo_usuario)
@@ -100,7 +103,7 @@ def exibir_com_acoes(df, categoria):
                                     
                                     if i < 6:
                                         if col == 'pessoa_id': # Essa condição é pra tornar o campo pessoa_id não editável
-                                            novo_valor = cols[0].text_input(f"**Campo {i + 1}:**", value=edit_row[i], key=f"{categoria}_{index}_edit_{i}", disabled=True)
+                                            novo_valor = cols[0].text_input(f"**Campo {i }:**", value=edit_row[i], key=f"{categoria}_{index}_edit_{i}", disabled=True)
                                         else:
                                             novo_valor = cols[0].text_input(f"**Campo {i + 1}:**", value=edit_row[i], key=f"{categoria}_{index}_edit_{i}")
                                     elif i < 12:
@@ -153,7 +156,7 @@ def exibir_com_acoes(df, categoria):
 
 # Sidebar com filtros
 st.sidebar.header("Filtros")
-tipo_cadastro = st.sidebar.selectbox("Selecionar Tipo de Cadastro", ["Todos", "Clientes PJ", "Estrangeiros", "Funcionários"])
+tipo_cadastro = st.sidebar.selectbox("Selecionar Tipo de Cadastro", ["Todos", "Clientes PJ", "Estrangeiros", "Funcionários", "Fornecedores"])
 
 # Exibição condicional de acordo com o filtro
 if tipo_cadastro == "Todos":
@@ -165,6 +168,9 @@ if tipo_cadastro == "Todos":
 
     st.subheader("Funcionários")
     exibir_com_acoes(funcionarios, 'Funcionários')
+    
+    st.subheader("Fornecedores")
+    exibir_com_acoes(fornecedores, 'Fornecedores')
 
 elif tipo_cadastro == "Clientes PJ":
     st.subheader("Clientes - Pessoas Jurídicas")
@@ -177,6 +183,10 @@ elif tipo_cadastro == "Estrangeiros":
 elif tipo_cadastro == "Funcionários":
     st.subheader("Funcionários")
     exibir_com_acoes(funcionarios, 'Funcionários')
+    
+elif tipo_cadastro == "Fornecedores":
+    st.subheader("Fornecedores")
+    exibir_com_acoes(fornecedores, 'Fornecedores')
 
 # Botão de ação para adicionar novos cadastros
 st.sidebar.markdown("## Ações")

@@ -24,6 +24,8 @@ def titulo(nome):
         'matricula': 'Matrícula',
         'cargo': 'Profissão',
         'salario': 'Salário',   
+        'nome_empresa': 'Empresa',
+        'documento': 'Documento',
     }
     return dicionario[nome]
 

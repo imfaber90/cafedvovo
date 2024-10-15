@@ -1,3 +1,4 @@
+import streamlit as st
 from datetime import datetime
 
 def convert_to_datetime_format(data_str):
@@ -8,8 +9,7 @@ def convert_to_datetime_format(data_str):
             date = datetime.strptime(data_str, formato).date()
             return str(date)
         except ValueError:
-            continue  
-    raise ValueError(f"Formato de data inválido: {data_str}")
+            continue
 
 
 def convert_from_datetime_to_string(data):
@@ -18,7 +18,7 @@ def convert_from_datetime_to_string(data):
         try:
             data = datetime.strptime(data, '%Y-%m-%d').date()  # ou .datetime() se for necessário com hora
         except ValueError:
-            raise ValueError(f"Formato de data inválido: {data}")
+            st.error(f"Formato de data inválido: {data}") 
     
     # Agora, 'data' é um objeto datetime ou date, e podemos usar strftime
     return data.strftime('%d-%m-%Y')

@@ -134,7 +134,6 @@ async def criar():
         id_pessoa INTEGER PRIMARY KEY,
         nome_empresa TEXT NOT NULL,
         documento TEXT NOT NULL,
-        endereco TEXT NOT NULL,
         FOREIGN KEY (id_pessoa) REFERENCES pessoa (pessoa_id)
         ON DELETE CASCADE
         ON UPDATE NO ACTION

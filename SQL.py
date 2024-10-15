@@ -20,7 +20,7 @@ class CRUD:
         '''
         Insere um novo registro na tabela especificada.
         '''
-        # Cria a consulta SQL e os valores com base na tabela especificada
+        # Cria insert SQL e os valores com base na tabela especificada
         match table:
             case 'funcionario':
                 try:
@@ -96,6 +96,31 @@ class CRUD:
                     print(f"Ocorreu um erro ao cadastrar: {e}")
                 finally:
                     pass 
+                
+            case 'fornecedor':
+                try:
+                    # Execute a query com os valores como um dicionário
+                    self.cursor.execute("INSERT INTO pessoa (nome, email, data_nascimento, data_cadastro) VALUES (?, ?, ?, ?);", (kwargs.get('nome'), kwargs.get('email'), kwargs.get('nascimento'), kwargs.get('data_cadastro')))
+                    self.conn.commit()
+                    
+                    # Obtém o ID do último registro inserido
+                    last_id = self.cursor.lastrowid
+                    print("Último ID inserido:", last_id)
+                    
+                    self.cursor.execute("INSERT INTO telefone (id_pessoa, telefone) VALUES (?, ?);", (last_id, kwargs.get('tel')))
+                    self.conn.commit()
+                    
+                    self.cursor.execute("INSERT INTO endereco (id_pessoa, pais, cep, estado, cidade, bairro, rua, numero, complemento) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);", (last_id, kwargs.get('pais'), kwargs.get('cep'), kwargs.get('estado'), kwargs.get('cidade'), kwargs.get('bairro'), kwargs.get('logradouro'), kwargs.get('numero'), kwargs.get('complemento')))
+                    self.conn.commit()
+
+                    self.cursor.execute("INSERT INTO fornecedor (id_pessoa, nome_empresa, documento) VALUES (?, ?, ?);", (last_id, kwargs.get('nome_empresa'), kwargs.get('cnpj_fornecedor')))
+                    self.conn.commit()
+                    st.success("Fornecedor cadastrado com sucesso!")
+                except Exception as e:
+                    st.error(f"Ocorreu um erro ao cadastrar: {e}")
+                    print(f"Ocorreu um erro ao cadastrar: {e}")
+                finally:
+                    pass 
                     
             case _:
                 print("Tabela não encontrada")
@@ -122,6 +147,7 @@ class CRUD:
                 WHEN funcionario.id_pessoa IS NOT NULL THEN 'funcionario'
                 WHEN estrangeiro.id_pessoa IS NOT NULL THEN 'estrangeiro'
                 WHEN p_juridica.id_pessoa IS NOT NULL THEN 'p_juridica'
+                WHEN fornecedor.id_pessoa IS NOT NULL THEN 'fornecedor'
                 ELSE 'nao_especializado'
             END AS tipo_usuario,
             funcionario.cpf,
@@ -130,6 +156,8 @@ class CRUD:
             funcionario.salario,
             estrangeiro.passaporte,
             estrangeiro.descricao,
+            fornecedor.nome_empresa,
+            fornecedor.documento,
             p_juridica.cnpj,
             p_juridica.descricao AS descricao_pj
         FROM 
@@ -140,6 +168,8 @@ class CRUD:
             estrangeiro ON pessoa.pessoa_id = estrangeiro.id_pessoa
         LEFT JOIN 
             p_juridica ON pessoa.pessoa_id = p_juridica.id_pessoa
+        LEFT JOIN 
+            fornecedor ON pessoa.pessoa_id = fornecedor.id_pessoa
         LEFT JOIN 
             telefone ON pessoa.pessoa_id = telefone.id_pessoa
         LEFT JOIN 
@@ -253,6 +283,38 @@ class CRUD:
         WHERE 
             pessoa.pessoa_id = ?;
         """
+        
+        query_p_juridica_fornecedor = """
+        SELECT 
+            pessoa.pessoa_id,
+            pessoa.nome,
+            pessoa.email,
+            telefone.telefone,
+            pessoa.data_nascimento,
+            endereco.pais,
+            endereco.cep,
+            endereco.estado,
+            endereco.cidade,
+            endereco.bairro,
+            endereco.rua,
+            endereco.numero,
+            endereco.complemento,
+            fornecedor.nome_empresa,
+            fornecedor.documento,
+            pessoa.data_cadastro
+
+        FROM 
+            pessoa
+        JOIN 
+            fornecedor ON pessoa.pessoa_id = fornecedor.id_pessoa
+        JOIN 
+            telefone ON pessoa.pessoa_id = telefone.id_pessoa
+        JOIN 
+            endereco ON pessoa.pessoa_id = endereco.id_pessoa
+        WHERE 
+            pessoa.pessoa_id = ?;
+        """
+        
         query = ""
         if tipo == 'funcionario':
             query = query_funcionario
@@ -260,6 +322,8 @@ class CRUD:
             query = query_estrangeiro
         elif tipo == 'p_juridica':
             query = query_p_juridica
+        elif tipo == 'fornecedor':
+            query = query_p_juridica_fornecedor
         
         self.cursor.execute(query, (id,))  
         resultado = self.cursor.fetchone()
@@ -354,6 +418,38 @@ class CRUD:
         JOIN 
             endereco ON pessoa.pessoa_id = endereco.id_pessoa;
         """
+        
+        
+        query_p_juridica_fornecedor = """
+        SELECT 
+            pessoa.pessoa_id,
+            pessoa.nome,
+            pessoa.email,
+            telefone.telefone,
+            pessoa.data_nascimento,
+            endereco.pais,
+            endereco.cep,
+            endereco.estado,
+            endereco.cidade,
+            endereco.bairro,
+            endereco.rua,
+            endereco.numero,
+            endereco.complemento,
+            fornecedor.nome_empresa,
+            fornecedor.documento,
+            pessoa.data_cadastro
+
+        FROM 
+            pessoa
+        JOIN 
+            fornecedor ON pessoa.pessoa_id = fornecedor.id_pessoa
+        JOIN 
+            telefone ON pessoa.pessoa_id = telefone.id_pessoa
+        JOIN 
+            endereco ON pessoa.pessoa_id = endereco.id_pessoa;
+        """
+        
+        
         query = ""
         if tipo == 'funcionario':
             query = query_funcionario
@@ -361,6 +457,8 @@ class CRUD:
             query = query_estrangeiro
         elif tipo == 'p_juridica':
             query = query_p_juridica
+        elif tipo == 'fornecedor':
+            query = query_p_juridica_fornecedor
         
         return pd.read_sql_query(query, self.conn)
     
@@ -373,7 +471,7 @@ class CRUD:
         - parameter: Colunas específicas a serem buscadas, padrão é todas (*).
         '''
         query = ""
-        self.cursor.execute(query, (id,))  # Supondo que self.connection seja o seu objeto de conexão
+        self.cursor.execute(query, (id,)) 
         resultado = self.cursor.fetchall()
         self.conn.close()
         
