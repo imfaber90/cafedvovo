@@ -8,7 +8,7 @@ class CRUD:
         # Conecta ao banco de dados SQLite
         self.conn = sqlite3.connect('cafevovo.db')
         self.cursor = self.conn.cursor()
-        self.conn.execute('PRAGMA foreign_keys = ON')
+        self.conn.execute('PRAGMA foreign_keys = ON') #Se não usar esse comando o ON DELETE CASCADE não funcionará corretamente.
         
     def close_connection(self):
         """Fecha a conexão com o banco de dados."""
@@ -20,7 +20,6 @@ class CRUD:
         '''
         Insere um novo registro na tabela especificada.
         '''
-        # Cria insert SQL e os valores com base na tabela especificada
         match table:
             case 'funcionario':
                 try:

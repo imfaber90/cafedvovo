@@ -1,5 +1,4 @@
 import re
-from datetime import datetime
 from utils.datetime_converter import convert_to_datetime_format
 from utils.conversao_valor_monetario import convert_monetary_to_float
 

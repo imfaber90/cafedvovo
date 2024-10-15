@@ -7,6 +7,18 @@ from random import randrange
 import requests
 from datetime import datetime
 
+
+# Estilo pro botão ficar com o texto branco:
+st.markdown("""
+    <style> 
+    /* Estilizando os botões do Streamlit */
+    div.stButton > button {
+        color: white;
+    }                              
+    </style>
+""", unsafe_allow_html=True)
+
+
 setup('CADASTRO')
 
 # Instanciando a classe CRUD
@@ -137,7 +149,7 @@ if select == 'Física':
                     
 elif select == 'Jurídica':
     with col1:
-        st.markdown(f"<h2 style= 'color:Orange;padding-top: 25px;'>Tipo: </h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style= 'color:Orange;padding-top: 25px;'>TIPO: </h2>", unsafe_allow_html=True)
     with col2:
         select3 = st.selectbox('', ['Cliente PJ', 'Fornecedor'], key='selec2')
     if select3 == 'Cliente PJ':    
