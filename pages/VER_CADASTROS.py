@@ -103,7 +103,7 @@ def exibir_com_acoes(df, categoria):
                                     
                                     if i < 6:
                                         if col == 'pessoa_id': # Essa condição é pra tornar o campo pessoa_id não editável
-                                            novo_valor = cols[0].text_input(f"**Campo {i }:**", value=edit_row[i], key=f"{categoria}_{index}_edit_{i}", disabled=True)
+                                            novo_valor = cols[0].text_input(f"**Campo {i + 1}:**", value=edit_row[i], key=f"{categoria}_{index}_edit_{i}", disabled=True)
                                         else:
                                             novo_valor = cols[0].text_input(f"**Campo {i + 1}:**", value=edit_row[i], key=f"{categoria}_{index}_edit_{i}")
                                     elif i < 12:

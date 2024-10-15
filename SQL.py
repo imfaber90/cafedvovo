@@ -1,5 +1,4 @@
 import sqlite3
-import asyncio
 import streamlit as st
 import pandas as pd
 
@@ -9,6 +8,7 @@ class CRUD:
         # Conecta ao banco de dados SQLite
         self.conn = sqlite3.connect('cafevovo.db')
         self.cursor = self.conn.cursor()
+        self.conn.execute('PRAGMA foreign_keys = ON')
         
     def close_connection(self):
         """Fecha a conexão com o banco de dados."""
@@ -575,7 +575,7 @@ class CRUD:
         
     def delete(self, table, column, id):
         try:
-            query = f"DELETE FROM {table} WHERE {column} = {id}"
+            query = f"DELETE FROM {table} WHERE {column} = {id};"
             self.cursor.execute(query)
             self.conn.commit()
             st.success("Removido com sucesso!")
