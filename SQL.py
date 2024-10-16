@@ -120,6 +120,30 @@ class CRUD:
                     print(f"Ocorreu um erro ao cadastrar: {e}")
                 finally:
                     pass 
+                
+            case 'produto':
+                try:
+                    # Execute a query com os valores como um dicionário
+                    self.cursor.execute("INSERT INTO produto (nome_produto, categoria, margem_lucro) VALUES (?, ?, ?);", (kwargs.get('nome_produto'), kwargs.get('categoria'), kwargs.get('margem_lucro')))
+                    self.conn.commit() 
+                    st.success("Produto cadastrado com sucesso!")
+                except Exception as e:
+                    st.error(f"Ocorreu um erro ao cadastrar: {e}")
+                    print(f"Ocorreu um erro ao cadastrar: {e}")
+                finally:
+                    pass 
+                
+            case 'item_insumo':
+                try:
+                    # Execute a query com os valores como um dicionário
+                    self.cursor.execute("INSERT INTO item_insumo (nome_insumo, quantidade, custo) VALUES (?, ?, ?);", (kwargs.get('nome_insumo'), kwargs.get('quantidade'), kwargs.get('custo')))
+                    self.conn.commit() 
+                    st.success("Insumo cadastrado com sucesso!")
+                except Exception as e:
+                    st.error(f"Ocorreu um erro ao cadastrar: {e}")
+                    print(f"Ocorreu um erro ao cadastrar: {e}")
+                finally:
+                    pass 
                     
             case _:
                 print("Tabela não encontrada")
@@ -461,18 +485,48 @@ class CRUD:
         
         return pd.read_sql_query(query, self.conn)
     
-    def read(self, table, id, parameter='*'):
+    def read(self, table, condition=None, **kwargs):
         '''
         Busca registros na tabela especificada.
         
         Parâmetros:
         - table: Nome da tabela a ser consultada.
-        - parameter: Colunas específicas a serem buscadas, padrão é todas (*).
+        - condition: Condição opcional para filtrar os resultados (ex: "id = ?").
+        - kwargs: Colunas específicas a serem buscadas, padrão é todas (*).
+        
+        Exemplos de uso:
+        
+        1. Para buscar um produto específico pelo ID:
+        resultado = self.read('produto', condition="id = ?", columns=['nome', 'quantidade', 'preco'], params=[1])
+        
+        2. Para buscar todos os produtos, sem condição:
+        resultado = self.read('produto', columns=['nome', 'quantidade', 'preco'])
+        
+        3. Para buscar todos os produtos, sem condição e selecionando todas as colunas:
+        resultado = self.read('produto', all=True)
         '''
-        query = ""
-        self.cursor.execute(query, (id,)) 
+        
+        self.conn = sqlite3.connect('cafevovo.db')
+        self.cursor = self.conn.cursor()
+        self.conn.execute('PRAGMA foreign_keys = ON')
+        
+        # Verificando se "all" está no kwargs
+        if kwargs.get('all', False):
+            campos = '*'
+        else:
+            campos = ', '.join(kwargs.get('columns', []))  # Supondo que as colunas sejam passadas em 'columns'
+
+        # Montando a query
+        query = f"SELECT {campos} FROM {table}"
+        if condition:
+            query += f" WHERE {condition}"
+
+        # Executando a consulta
+        self.cursor.execute(query, kwargs.get('params', []))  # Passa os parâmetros se houver
         resultado = self.cursor.fetchall()
-        self.conn.close()
+        
+        return resultado
+
         
     def update_user_information(self, pessoa_id, novos_dados):
         print(novos_dados)
@@ -587,8 +641,3 @@ class CRUD:
         # Fecha a conexão com o banco de dados
         self.conn.close()
     
-    def __del__(self):
-        """Método chamado quando o objeto é destruído."""
-        self.close_connection()
-
-               
