@@ -15,6 +15,10 @@ class CRUD:
         if self.conn:
             self.conn.close()
             self.conn = None
+    def open_connection(self):
+        self.conn = sqlite3.connect('cafevovo.db')
+        self.cursor = self.conn.cursor()
+        self.conn.execute('PRAGMA foreign_keys = ON') 
 
     def insert(self, table, **kwargs):
         '''
@@ -123,6 +127,7 @@ class CRUD:
                 
             case 'produto':
                 try:
+                    self.open_connection()
                     # Execute a query com os valores como um dicionário
                     self.cursor.execute("INSERT INTO produto (nome_produto, categoria, margem_lucro) VALUES (?, ?, ?);", (kwargs.get('nome_produto'), kwargs.get('categoria'), kwargs.get('margem_lucro')))
                     self.conn.commit() 
@@ -131,10 +136,11 @@ class CRUD:
                     st.error(f"Ocorreu um erro ao cadastrar: {e}")
                     print(f"Ocorreu um erro ao cadastrar: {e}")
                 finally:
-                    pass 
+                    self.close_connection() 
                 
             case 'item_insumo':
                 try:
+                    self.open_connection()
                     # Execute a query com os valores como um dicionário
                     self.cursor.execute("INSERT INTO item_insumo (nome_insumo, quantidade, custo) VALUES (?, ?, ?);", (kwargs.get('nome_insumo'), kwargs.get('quantidade'), kwargs.get('custo')))
                     self.conn.commit() 
@@ -143,13 +149,43 @@ class CRUD:
                     st.error(f"Ocorreu um erro ao cadastrar: {e}")
                     print(f"Ocorreu um erro ao cadastrar: {e}")
                 finally:
-                    pass 
+                    self.close_connection()
+            
+            case 'produto_insumo':
+                try:
+                    self.open_connection()
+                    
+                    self.cursor.execute("SELECT * FROM produto_insumo WHERE produto_id = ? AND insumo_id = ?", (kwargs.get('produto_id'), kwargs.get('insumo_id')))
+                    existing_record = self.cursor.fetchone()
+
+                    if existing_record:
+                        st.error("Essa combinação de produto e insumo já existe.")
+                        return
+                    
+                    # Execute a query com os valores como um dicionário
+                    self.cursor.execute("INSERT INTO produto_insumo (produto_id, insumo_id, qntd_insumo_produto) VALUES (?, ?, ?);", (kwargs.get('produto_id'), kwargs.get('insumo_id'), kwargs.get('qntd')))
+                    self.conn.commit() 
+                    st.success("Insumo cadastrado com sucesso!")
+                except Exception as e:
+                    st.error(f"Ocorreu um erro ao cadastrar: {e}")
+                    print(f"Ocorreu um erro ao cadastrar: {e}")
+                finally:
+                    self.close_connection() 
                     
             case _:
                 print("Tabela não encontrada")
                 return None
+        
+    def get_produtos_e_insumos(self):
+        conn = sqlite3.connect('cafevovo.db')
+        query = """
+        SELECT produto.nome_produto, item_insumo.nome_insumo, produto_insumo.qntd_insumo_produto
+        FROM produto
+        JOIN produto_insumo ON produto.produto_id = produto_insumo.produto_id
+        JOIN item_insumo ON produto_insumo.insumo_id = item_insumo.insumo_id
+        """
+        return pd.read_sql_query(query, conn)
 
-    
     def read_all_user_data(self, user_id):
         query = """
         SELECT 
@@ -506,26 +542,28 @@ class CRUD:
         resultado = self.read('produto', all=True)
         '''
         
-        self.conn = sqlite3.connect('cafevovo.db')
-        self.cursor = self.conn.cursor()
-        self.conn.execute('PRAGMA foreign_keys = ON')
-        
-        # Verificando se "all" está no kwargs
-        if kwargs.get('all', False):
-            campos = '*'
-        else:
-            campos = ', '.join(kwargs.get('columns', []))  # Supondo que as colunas sejam passadas em 'columns'
+        try:
+            self.open_connection()
+            # Verificando se "all" está no kwargs
+            if kwargs.get('all', False):
+                campos = '*'
+            else:
+                campos = ', '.join(kwargs.get('columns', []))  # Supondo que as colunas sejam passadas em 'columns'
 
-        # Montando a query
-        query = f"SELECT {campos} FROM {table}"
-        if condition:
-            query += f" WHERE {condition}"
+            # Montando a query
+            query = f"SELECT {campos} FROM {table}"
+            if condition:
+                query += f" WHERE {condition}"
 
-        # Executando a consulta
-        self.cursor.execute(query, kwargs.get('params', []))  # Passa os parâmetros se houver
-        resultado = self.cursor.fetchall()
-        
-        return resultado
+            # Executando a consulta
+            self.cursor.execute(query, kwargs.get('params', []))  # Passa os parâmetros se houver
+            resultado = self.cursor.fetchall()
+            
+            return resultado
+        except:
+            st.error("Erro na consulta de dados")
+        finally:
+            self.close_connection()
 
         
     def update_user_information(self, pessoa_id, novos_dados):
